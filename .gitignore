@@ -1,0 +1,31 @@
+# --- Python / Backend ---
+backend/venv/
+backend/.env
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/db.sqlite3
+backend/.pytest_cache/
+backend/uploads/*
+# Keep the uploads folder structure but not the images
+!backend/uploads/.gitkeep
+
+# --- React / Frontend ---
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# --- IDE / System ---
+.vscode/
+.idea/
+.DS_Store
+*.swp
+Thumbs.db
