@@ -37,6 +37,7 @@ function App() {
           <Route path="/" element={<PrivateRoute><Layout><Home /></Layout></PrivateRoute>} />
           <Route path="/posts" element={<PrivateRoute><Layout><PostsList /></Layout></PrivateRoute>} />
           <Route path="/posts/new" element={<PrivateRoute><Layout><AddPost /></Layout></PrivateRoute>} />
+          <Route path="/posts/edit/:id" element={<PrivateRoute><Layout><AddPost /></Layout></PrivateRoute>} />
           <Route path="/posts/:id" element={<PrivateRoute><Layout><PostDetail /></Layout></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
           

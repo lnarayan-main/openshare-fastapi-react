@@ -1,15 +1,19 @@
 import { useForm } from 'react-hook-form';
-import { useNavigate, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { postsAPI } from '../services/api';
 
 export default function AddPost() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState("");
+
+  const isEditMode = Boolean(id);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -20,11 +24,30 @@ export default function AddPost() {
     }
   });
 
+
+  useEffect(() => {
+    if (isEditMode) {
+      const loadPost = async () => {
+        try {
+          const response = await postsAPI.getPostById(id);
+          reset(response.data); 
+        } catch (err) {
+          console.error("Failed to load post", err);
+        }
+      };
+      loadPost();
+    }
+  }, [id, isEditMode, reset]);
+
   const onSubmit = async (data) => {
     setServerError("");
     try {
-      await postsAPI.create(data);
-      navigate("/posts"); // Go back to the list after success
+      if (isEditMode) {
+        await postsAPI.updatePost(id, data);
+      } else {
+        await postsAPI.createPost(data);
+      }
+      navigate("/posts"); 
     } catch (err) {
       setServerError("Failed to create post. Please check your connection.");
       console.error("Create Post Error: ", err);
@@ -43,7 +66,7 @@ export default function AddPost() {
 
         <div className="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-xl p-8">
           <div className="border-b border-gray-900/10 pb-8">
-            <h2 className="text-2xl font-semibold leading-7 text-gray-900">Create New Post</h2>
+            <h2 className="text-2xl font-semibold leading-7 text-gray-900">{isEditMode ? "Update Post" : "Create New Post"}</h2>
             <p className="mt-1 text-sm leading-6 text-gray-600">
               Fill in the details below to publish a new article to your account.
             </p>
@@ -126,7 +149,7 @@ export default function AddPost() {
                 disabled={isSubmitting}
                 className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:bg-indigo-400"
               >
-                {isSubmitting ? "Saving..." : "Save Post"}
+                {isSubmitting ? "Saving..." : isEditMode ? "Update Post" : "Create Post"}
               </button>
             </div>
           </form>
