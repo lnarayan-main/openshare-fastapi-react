@@ -92,6 +92,17 @@ export default function AddPost() {
               />
               {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title.message}</p>}
             </div>
+            <div>
+              <label className="block text-sm font-medium leading-6 text-gray-900">Post Thumbnail</label>
+              <input
+                  type="file"
+                  id="photo-upload"
+                  className=""
+                  {...register('photo-upload', {required: "Post thumbnail is required"})}
+                  accept="image/*"
+                />
+              {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title.message}</p>}
+            </div>
 
             <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
               {/* Category */}
