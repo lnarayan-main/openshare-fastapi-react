@@ -61,6 +61,7 @@ export default function Register() {
             <label className="block text-sm/6 font-medium text-gray-900">Full Name</label>
             <input
               {...register("full_name", { required: "Full name is required" })}
+              placeholder='Full name'
               className={`block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${errors.full_name ? 'ring-red-500' : 'ring-gray-300'} placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6`}
             />
             {errors.full_name && <p className="mt-1 text-xs text-red-500">{errors.full_name.message}</p>}
@@ -75,6 +76,7 @@ export default function Register() {
                 required: "Email is required",
                 pattern: { value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/, message: "Invalid email format" }
               })}
+              placeholder='Email address'
               className={`block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${errors.email ? 'ring-red-500' : 'ring-gray-300'} focus:ring-2 focus:ring-indigo-600 sm:text-sm/6`}
             />
             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
@@ -85,6 +87,7 @@ export default function Register() {
             <label className="block text-sm/6 font-medium text-gray-900">Mobile Number (Optional)</label>
             <input
               {...register("mobile_number")}
+              placeholder='Mobile number'
               className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm/6"
             />
           </div>
@@ -98,6 +101,7 @@ export default function Register() {
                 required: "Password is required",
                 minLength: { value: 6, message: "Minimum 6 characters" }
               })}
+              placeholder='Password'
               className={`block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${errors.password ? 'ring-red-500' : 'ring-gray-300'} focus:ring-2 focus:ring-indigo-600 sm:text-sm/6`}
             />
             {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
@@ -116,6 +120,7 @@ export default function Register() {
                   }
                 },
               })}
+              placeholder='Confirm password'
               className={`block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${errors.confirmPassword ? 'ring-red-500' : 'ring-gray-300'} focus:ring-2 focus:ring-indigo-600 sm:text-sm/6`}
             />
             {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>}

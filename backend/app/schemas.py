@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, validator, Field
 from datetime import datetime
 from typing import Optional
 
@@ -79,3 +79,11 @@ class PostResponse(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordSchema(BaseModel):
+    new_password: str = Field(..., min_length=8, max_length=32, description="The new password for the user")
+
+    

@@ -32,6 +32,10 @@ export const authAPI = {
 
   register: (data) => api.post("/auth/register", data),
 
+  forgotPassword: (data) => api.post("/auth/forgot-password", {email: data}),
+
+  resetPassword: (token, data) => api.post(`/auth/reset-password/${token}`, data),
+
   getMe: () => api.get("/auth/me"),
 
   logout: () => api.post("/auth/logout"),

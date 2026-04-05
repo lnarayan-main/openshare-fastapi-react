@@ -69,6 +69,7 @@ export default function Login() {
                     message: "Please enter a valid email address"
                   }
                 })}
+                placeholder='Email'
                 className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 ${
                   errors.email ? 'outline-red-500' : 'outline-gray-300'
                 } placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
@@ -86,15 +87,16 @@ export default function Login() {
                 Password
               </label>
               <div className="text-sm">
-                <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                <Link to="/forgot-password" className="font-semibold text-indigo-600 hover:text-indigo-500">
                   Forgot password?
-                </a>
+                </Link>
               </div>
             </div>
             <div className="mt-2">
               <input
                 type="password"
                 {...register("password", { required: "Password is required" })}
+                placeholder='Password'
                 className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 ${
                   errors.password ? 'outline-red-500' : 'outline-gray-300'
                 } placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}

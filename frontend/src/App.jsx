@@ -15,6 +15,8 @@ import PostsList from "./components/PostsList";
 import AddPost from "./components/AddPost";
 import Layout from "./components/Layout";
 import PostDetail from "./components/PostDetail";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 
 
 const PrivateRoute = ({ children }) => {
@@ -32,6 +34,8 @@ function App() {
           {/* Public Pages (No Header) */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Private Pages (With Common Header) */}
           <Route path="/" element={<PrivateRoute><Layout><Home /></Layout></PrivateRoute>} />
