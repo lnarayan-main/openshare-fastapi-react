@@ -9,11 +9,15 @@ from app.database import get_db
 from app.schemas import UserResponse, UserUpdate
 from app.auth import get_current_user
 from app.models import User
+from decouple import config
+from uuid import uuid4
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+BASE_UPLOAD_DIR = config("UPLOAD_DIR", default="static/uploads")
 
 
 @router.get("/", response_model=list[UserResponse])
@@ -92,42 +96,39 @@ async def upload_profile_pic(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Validate file type
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
     
+    sub_folder = "profile_pics"
+    target_dir = os.path.join(BASE_UPLOAD_DIR, sub_folder)
+    os.makedirs(target_dir, exist_ok=True)
+
     if current_user.profile_pic:
-        old_file_path = os.path.join(".", current_user.profile_pic.lstrip("/"))
+        old_file_path = current_user.profile_pic.lstrip("/")
         if os.path.exists(old_file_path):
             try:
                 os.remove(old_file_path)
             except Exception as e:
                 print(f"Log: Could not delete old file {old_file_path}: {e}")
 
-    # Create user-specific directory
-    user_dir = os.path.join(UPLOAD_DIR, str(current_user.id))
-    os.makedirs(user_dir, exist_ok=True)
+    file_extension = ".jpg" # We are forcing JPEG in optimization
+    unique_name = f"user_{current_user.id}_{uuid4().hex[:8]}{file_extension}"
+    file_save_path = os.path.join(target_dir, unique_name)
 
-    # Generate unique filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"profile_{timestamp}.jpg"
-    file_path = os.path.join(user_dir, filename)
+    try:
+        with Image.open(file.file) as img:
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            
+            img.thumbnail((500, 500))
+            
+            img.save(file_save_path, "JPEG", quality=85)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image processing failed: {e}")
+    
+    relative_web_path = f"/{BASE_UPLOAD_DIR}/{sub_folder}/{unique_name}".replace("\\", "/")
 
-    # Save and optimize image
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    # Optimize image
-    with Image.open(file_path) as img:
-        # Convert to RGB if it's RGBA (prevents error when saving as JPEG)
-        if img.mode in ("RGBA", "P"):
-            img = img.convert("RGB")
-        img.thumbnail((500, 500))
-        img.save(file_path, "JPEG", quality=85)
-
-    # Update database with relative path
-    relative_path = f"/uploads/{current_user.id}/{filename}"
-    current_user.profile_pic = relative_path
+    current_user.profile_pic = relative_web_path
     db.commit()
     db.refresh(current_user)
 

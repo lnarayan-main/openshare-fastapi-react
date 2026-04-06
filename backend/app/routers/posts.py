@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import shutil
+import os
+from uuid import uuid4
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -6,24 +9,69 @@ from app.database import get_db
 from app.schemas import PostCreate, PostResponse
 from app.auth import get_current_user
 from app.models import User, Post
+from decouple import config
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
+
+BASE_UPLOAD_DIR = config("UPLOAD_DIR", default="static/uploads")
+
+# @router.post("/create-post", response_model=PostResponse)
+# def create_post(
+#     data: PostCreate,
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user),
+# ):
+#     print("Data: ", data)
+#     post = Post(
+#         user_id=current_user.id,
+#         title=data.title,
+#         category=data.category,
+#         status=data.status,
+#         content=data.content,
+#     )
+#     db.add(post)
+#     db.commit()
+#     db.refresh(post)
+#     return post
 
 
 @router.post("/create-post", response_model=PostResponse)
 def create_post(
-    data: PostCreate,
+    title: str = Form(...),
+    category: str = Form("General"),
+    status: str = Form("Draft"),
+    content: str = Form(...),
+    thumbnail: UploadFile = File(None), # Optional file
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    print("Data: ", data)
+    thumbnail_path = None
+
+    if thumbnail:
+        sub_folder = "post_thumbnails"
+        target_dir = os.path.join(BASE_UPLOAD_DIR, sub_folder)
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir, exist_ok=True)
+        
+        file_extension = os.path.splitext(thumbnail.filename)[1]
+        unique_filename = f"{uuid4()}{file_extension}"
+
+        file_save_path = os.path.join(target_dir, unique_filename)
+        
+        with open(file_save_path, "wb") as buffer:
+            shutil.copyfileobj(thumbnail.file, buffer)
+
+        thumbnail_url = f"/{BASE_UPLOAD_DIR}/{sub_folder}/{unique_filename}".replace("\\", "/")
+
     post = Post(
         user_id=current_user.id,
-        title=data.title,
-        category=data.category,
-        status=data.status,
-        content=data.content,
+        title=title,
+        category=category,
+        status=status,
+        content=content,
+        thumbnail=thumbnail_url 
     )
+
     db.add(post)
     db.commit()
     db.refresh(post)

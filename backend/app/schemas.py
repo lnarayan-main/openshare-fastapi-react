@@ -68,6 +68,7 @@ class PostResponse(BaseModel):
     category: str
     status: str
     content: str
+    thumbnail: str = None
     is_active: bool
     created_at: datetime
     user: UserData

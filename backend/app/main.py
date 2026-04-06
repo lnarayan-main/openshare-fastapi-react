@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import os
+from decouple import config
 
 from app.database import engine
 from app.models import Base
@@ -28,8 +29,14 @@ app.add_middleware(
 )
 
 # Static files for uploads
-os.makedirs("uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+UPLOAD_DIR = config("UPLOAD_DIR", default="static/uploads")
+base_static_folder = UPLOAD_DIR.split('/')[0]
+if not os.path.exists(base_static_folder):
+    os.makedirs(base_static_folder)
+app.mount("/static", StaticFiles(directory=base_static_folder), name="static")
+
+# os.makedirs("uploads", exist_ok=True)
+# app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Include routers
 app.include_router(auth.router)
