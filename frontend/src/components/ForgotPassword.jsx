@@ -64,7 +64,7 @@ export default function ForgotPassword() {
                       },
                     })}
                     type="email"
-                    placeholder="name@company.com"
+                    placeholder="Email address (e.g. mail@company.com)"
                     className={`block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${
                       errors.email ? "ring-red-500" : "ring-gray-300"
                     } placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 transition-all sm:text-sm`}

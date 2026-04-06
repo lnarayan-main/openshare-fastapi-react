@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from './Logo';
+import PasswordField from './PasswordField';
 
 export default function Login() {
   const { login } = useAuth();
@@ -88,28 +89,18 @@ export default function Login() {
             </div>
 
             {/* Password Field */}
-            <div>
-              <div className="flex items-center justify-between">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Password
-                </label>
-                <Link to="/forgot-password" name="forgot" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot?
-                </Link>
-              </div>
-              <div className="mt-1">
-                <input
-                  type="password"
-                  {...register("password", { required: "Password is required" })}
-                  placeholder='••••••••'
-                  className={`px-3 block w-full rounded-lg border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ${
-                    errors.password ? 'ring-red-500' : 'ring-gray-300'
-                  } placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 transition-all sm:text-sm`}
-                />
-                {errors.password && (
-                  <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
-                )}
-              </div>
+            <PasswordField 
+              label="Password"
+              name="password"
+              register={register}
+              error={errors.password}
+              validation={{ required: "Password is required" }}
+            />
+
+            <div className="flex justify-end -mt-4">
+              <Link to="/forgot-password" intrinsic="true" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                Forgot Password?
+              </Link>
             </div>
 
             {/* Submit Button */}

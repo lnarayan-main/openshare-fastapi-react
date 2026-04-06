@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from './Logo';
+import PasswordField from './PasswordField';
 
 export default function Register() {
   const { register: authRegister } = useAuth(); 
@@ -74,7 +75,7 @@ export default function Register() {
               <label className="block text-sm font-semibold text-gray-700">Full Name</label>
               <input
                 {...register("full_name", { required: "Full name is required" })}
-                placeholder='Laxmi Narayan'
+                placeholder='Full name'
                 className={`mt-1 block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ${
                   errors.full_name ? 'ring-red-500' : 'ring-gray-300'
                 } focus:ring-2 focus:ring-indigo-600 sm:text-sm`}
@@ -104,7 +105,7 @@ export default function Register() {
                 <label className="block text-sm font-semibold text-gray-700">Mobile (Optional)</label>
                 <input
                   {...register("mobile_number")}
-                  placeholder='9876543210'
+                  placeholder='Mobile number'
                   className="mt-1 block w-full rounded-lg border-0 py-2.5 px-3 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm"
                 />
               </div>
@@ -112,37 +113,28 @@ export default function Register() {
 
             {/* Password Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700">Password</label>
-                <input
-                  type="password"
-                  {...register("password", { 
-                    required: "Required",
-                    minLength: { value: 6, message: "Min 6 chars" }
-                  })}
-                  placeholder='••••••••'
-                  className={`mt-1 block w-full rounded-lg border-0 py-2.5 px-3 shadow-sm ring-1 ring-inset ${
-                    errors.password ? 'ring-red-500' : 'ring-gray-300'
-                  } focus:ring-2 focus:ring-indigo-600 sm:text-sm`}
-                />
-                {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
-              </div>
+              <PasswordField 
+                label="Password"
+                name="password"
+                register={register}
+                error={errors.password}
+                validation={{ 
+                  required: "Required",
+                  minLength: { value: 6, message: "Min 6 chars" },
+                  maxLength: { value: 32, message: "Max 32 chars" }
+                }}
+              />
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700">Confirm</label>
-                <input
-                  type="password"
-                  {...register("confirmPassword", {
-                    required: "Please confirm",
-                    validate: (val) => watch('password') === val || "No match",
-                  })}
-                  placeholder='••••••••'
-                  className={`mt-1 block w-full rounded-lg border-0 py-2.5 px-3 shadow-sm ring-1 ring-inset ${
-                    errors.confirmPassword ? 'ring-red-500' : 'ring-gray-300'
-                  } focus:ring-2 focus:ring-indigo-600 sm:text-sm`}
-                />
-                {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>}
-              </div>
+              <PasswordField 
+                label="Confirm"
+                name="confirmPassword"
+                register={register}
+                error={errors.confirmPassword}
+                validation={{
+                  required: "Please confirm",
+                  validate: (val) => watch('password') === val || "No match",
+                }}
+              />
             </div>
 
             {/* Submit Button */}
@@ -152,15 +144,7 @@ export default function Register() {
                 disabled={isSubmitting}
                 className="flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-md hover:bg-indigo-700 transition-all active:scale-[0.98] disabled:bg-indigo-400"
               >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating account...
-                  </span>
-                ) : "Get Started"}
+                {isSubmitting ? "Creating account..." : "Get Started"}
               </button>
             </div>
           </form>
