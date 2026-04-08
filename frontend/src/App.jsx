@@ -36,14 +36,16 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          {/* <Route path="/" element={<Home />} /> */}
+
+          <Route path="/" element={<Home />} />
+          <Route path="/posts/:id" element={<PostDetail />} />
 
           {/* Private Pages (With Common Header) */}
-          <Route path="/" element={<PrivateRoute><Layout><Home /></Layout></PrivateRoute>} />
+          {/* <Route path="/" element={<PrivateRoute><Layout><Home /></Layout></PrivateRoute>} /> */}
           <Route path="/posts" element={<PrivateRoute><Layout><PostsList /></Layout></PrivateRoute>} />
           <Route path="/posts/new" element={<PrivateRoute><Layout><AddPost /></Layout></PrivateRoute>} />
           <Route path="/posts/edit/:id" element={<PrivateRoute><Layout><AddPost /></Layout></PrivateRoute>} />
-          <Route path="/posts/:id" element={<PrivateRoute><Layout><PostDetail /></Layout></PrivateRoute>} />
+          {/* <Route path="/posts/:id" element={<PrivateRoute><Layout><PostDetail /></Layout></PrivateRoute>} /> */}
           <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
           
           <Route path="*" element={<Navigate to="/" />} />

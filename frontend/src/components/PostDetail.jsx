@@ -35,7 +35,9 @@ export default function PostDetail() {
     return (
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold text-gray-900">Post not found</h2>
-        <Link to="/" className="mt-4 text-indigo-600 hover:underline">Return Home</Link>
+        <Link to="/" className="mt-4 text-indigo-600 hover:underline">
+          Return Home
+        </Link>
       </div>
     );
   }
@@ -43,20 +45,25 @@ export default function PostDetail() {
   return (
     <div className="bg-white min-h-screen">
       {/* Article Header / Hero Image */}
-      <div className="relative w-full h-[400px] bg-gray-900">
-        <img
-          src={getMediaUrl(post.thumbnail) || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1200"}
-          alt={post.title}
-          className="w-full h-full object-cover opacity-60"
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="max-w-4xl px-4 text-center">
-            <span className="inline-flex items-center rounded-full bg-indigo-500/10 px-3 py-1 text-sm font-medium text-indigo-400 ring-1 ring-inset ring-indigo-500/20 mb-4">
-              {post.category}
-            </span>
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
-              {post.title}
-            </h1>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="relative h-[400px] overflow-hidden rounded-3xl bg-gray-900 shadow-2xl">
+          <img
+            src={
+              getMediaUrl(post.thumbnail) ||
+              "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1200"
+            }
+            alt={post.title}
+            className="absolute inset-0 w-full h-full object-cover opacity-80"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-gray-900/60 to-transparent">
+            <div className="max-w-4xl px-4 text-center">
+              <span className="inline-flex items-center rounded-full bg-indigo-500/20 px-3 py-1 text-sm font-medium text-indigo-300 ring-1 ring-inset ring-indigo-500/30 mb-4 backdrop-blur-sm">
+                {post.category}
+              </span>
+              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl drop-shadow-md">
+                {post.title}
+              </h1>
+            </div>
           </div>
         </div>
       </div>
@@ -76,8 +83,11 @@ export default function PostDetail() {
                 {post.user?.full_name}
               </p>
               <p className="text-gray-500">
-                Published on {new Date(post.created_at).toLocaleDateString(undefined, { 
-                    month: 'long', day: 'numeric', year: 'numeric' 
+                Published on{" "}
+                {new Date(post.created_at).toLocaleDateString(undefined, {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
                 })}
               </p>
             </div>
@@ -85,7 +95,7 @@ export default function PostDetail() {
 
           {/* Action Buttons (Go back / Share) */}
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={() => navigate(-1)}
               className="text-sm font-semibold text-gray-600 hover:text-indigo-600"
             >
@@ -97,9 +107,7 @@ export default function PostDetail() {
         {/* Post Content */}
         <article className="prose prose-lg prose-indigo mx-auto text-gray-700 leading-8">
           {/* We use white-space: pre-line to preserve paragraphs from the textarea */}
-          <div className="whitespace-pre-line text-lg">
-            {post.content}
-          </div>
+          <div className="whitespace-pre-line text-lg">{post.content}</div>
         </article>
 
         {/* Footer Navigation */}
@@ -108,16 +116,18 @@ export default function PostDetail() {
             About the author
           </h3>
           <div className="mt-4 flex items-start gap-6 bg-gray-50 p-6 rounded-2xl">
-             <img
+            <img
               src={getMediaUrl(post.user?.profile_pic) || "/default-avatar.png"}
               alt=""
               className="h-16 w-16 rounded-full object-cover"
             />
             <div>
-                <p className="text-base font-bold text-gray-900">{post.user?.full_name}</p>
-                <p className="mt-1 text-sm text-gray-600">
-                    {post.user?.about_me || "This author hasn't added a bio yet."}
-                </p>
+              <p className="text-base font-bold text-gray-900">
+                {post.user?.full_name}
+              </p>
+              <p className="mt-1 text-sm text-gray-600">
+                {post.user?.about_me || "This author hasn't added a bio yet."}
+              </p>
             </div>
           </div>
         </div>

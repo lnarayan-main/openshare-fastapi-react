@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { postsAPI } from "../services/api";
 import { getMediaUrl } from "../services/helpers";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -35,12 +37,21 @@ export default function Home() {
             </p>
           </div>
           <div className="mt-4 flex md:ml-4 md:mt-0">
-            <Link
-              to="/posts/new"
-              className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Write a Post
-            </Link>
+            {user ? (
+              <Link
+                to="/posts/new"
+                className="ml-3 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Write a Post
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="ml-3 inline-flex items-center rounded-md border border-indigo-600 px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
+              >
+                Login to Post
+              </Link>
+            )}
           </div>
         </div>
 
@@ -50,23 +61,34 @@ export default function Home() {
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center bg-white rounded-xl py-16 shadow-sm ring-1 ring-gray-900/5">
-            <p className="text-gray-500">No posts yet. Be the first to share something!</p>
+            <p className="text-gray-500">
+              No posts yet. Be the first to share something!
+            </p>
           </div>
         ) : (
           /* The Post Grid */
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
             {posts.map((post) => (
-              <Link key={post.id} to={`/posts/${post.id}`} className="group relative flex flex-col items-start">
+              <Link
+                key={post.id}
+                to={`/posts/${post.id}`}
+                className="group relative flex flex-col items-start"
+              >
                 {/* Thumbnail Container */}
                 <div className="relative w-full aspect-video overflow-hidden rounded-2xl bg-gray-100 ring-1 ring-inset ring-gray-900/10">
                   <img
-                    src={getMediaUrl(post.thumbnail) || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=800"}
+                    src={
+                      getMediaUrl(post.thumbnail) ||
+                      "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=800"
+                    }
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
                   />
                   {/* Status Overlay */}
                   <div className="absolute top-4 right-4">
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium backdrop-blur-md bg-white/70 text-gray-800 ring-1 ring-inset ring-gray-900/10`}>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium backdrop-blur-md bg-white/70 text-gray-800 ring-1 ring-inset ring-gray-900/10`}
+                    >
                       {post.status}
                     </span>
                   </div>
@@ -76,15 +98,17 @@ export default function Home() {
                 <div className="max-w-xl">
                   <div className="mt-6 flex items-center gap-x-4 text-xs">
                     <time dateTime={post.created_at} className="text-gray-500">
-                      {new Date(post.created_at).toLocaleDateString(undefined, { 
-                        month: 'short', day: 'numeric', year: 'numeric' 
+                      {new Date(post.created_at).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
                       })}
                     </time>
                     <span className="relative z-10 rounded-full bg-gray-100 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-200">
                       {post.category}
                     </span>
                   </div>
-                  
+
                   <div className="group relative">
                     <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-indigo-600">
                       <span className="absolute inset-0" />
@@ -98,7 +122,10 @@ export default function Home() {
                   {/* Author Footer */}
                   <div className="relative mt-6 flex items-center gap-x-4">
                     <img
-                      src={getMediaUrl(post.user?.profile_pic) || "https://via.placeholder.com/40"}
+                      src={
+                        getMediaUrl(post.user?.profile_pic) ||
+                        "https://via.placeholder.com/40"
+                      }
                       alt=""
                       className="h-10 w-10 rounded-full bg-gray-100 object-cover border border-gray-200"
                     />

@@ -44,7 +44,9 @@ export default function Login() {
         
         <div className="sm:mx-auto sm:w-full">
           {/* Dynamic Logo Section */}
-          <Logo/>
+          <Link to="/home">
+            <Logo/>
+          </Link>
           
           <h2 className="mt-6 text-center text-3xl font-extrabold tracking-tight text-gray-900">
             Welcome Back
