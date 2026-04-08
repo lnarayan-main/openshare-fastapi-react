@@ -6,10 +6,11 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
-from app.schemas import PostCreate, PostResponse
+from app.schemas import PostCreate, PostResponse, PostPaginatedResponse
 from app.auth import get_current_user
 from app.models import User, Post
 from decouple import config
+from math import ceil
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
@@ -133,21 +134,34 @@ def update_post(
     return db_post
 
 
-@router.get("/get-posts", response_model=List[PostResponse])
+@router.get("/get-posts", response_model=PostPaginatedResponse)
 def get_posts(
+    page: int = 1,
+    page_size: int = 10,
+    search: str = None,
+    status: str = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Get messages between current user and specified user
-    posts = (
-        db.query(Post)
-        .filter((Post.user_id == current_user.id))
-        .order_by(Post.created_at.desc())
-        .all()
-    )
+    query = db.query(Post).filter(Post.user_id == current_user.id)
 
-    db.commit()
-    return posts[::-1]
+    if search:
+        query = query.filter(Post.title.ilike(f"%{search}%"))
+    if status:
+        query = query.filter(Post.status == status)
+
+    total_count = query.count()
+    total_pages = ceil(total_count / page_size)
+
+    skip = (page - 1) * page_size
+    posts = query.order_by(Post.created_at.desc()).offset(skip).limit(page_size).all()
+    
+    return {
+        "posts": posts,
+        "total_pages": total_pages,
+        "current_page": page,
+        "total_records": total_count 
+    }
 
 
 @router.get("/all-posts", response_model=List[PostResponse])

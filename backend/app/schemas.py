@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, validator, Field
 from datetime import datetime
 from typing import Optional
+from typing import List
 
 
 class UserBase(BaseModel):
@@ -72,6 +73,15 @@ class PostResponse(BaseModel):
     is_active: bool
     created_at: datetime
     user: UserData
+
+    class Config:
+        from_attributes = True
+
+class PostPaginatedResponse(BaseModel):
+    posts: List[PostResponse]
+    total_pages: int
+    current_page: int
+    total_records: int
 
     class Config:
         from_attributes = True
