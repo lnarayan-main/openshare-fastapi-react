@@ -11,6 +11,7 @@ from app.auth import get_current_user
 from app.models import User, Post
 from decouple import config
 from math import ceil
+from app.tasks.email_tasks import send_new_post_notification
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
@@ -76,6 +77,14 @@ def create_post(
     db.add(post)
     db.commit()
     db.refresh(post)
+    
+    # Sending new post creation email notification to other users
+    other_users = db.query(User).filter(User.id != current_user.id).all()
+    email_list = [u.email for u in other_users]
+
+    if email_list:
+        send_new_post_notification.delay(email_list, post.title, current_user.full_name)
+
     return post
 
 
