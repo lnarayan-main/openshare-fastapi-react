@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { postsAPI } from "../services/api";
 import { getMediaUrl } from "../services/helpers";
+import { EyeIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 export default function PostsList() {
   const [posts, setPosts] = useState([]);
@@ -20,6 +21,17 @@ export default function PostsList() {
     };
     fetchPosts();
   }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+        await postsAPI.deletePost(id);
+        setPosts((prevPosts) => prevPosts.filter((post)=> post.id !== id));
+      } catch (err) {
+        console.error("Failed to delete posts", err);
+        alert("Could not delete the post. Please try again.");
+      }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -112,13 +124,16 @@ export default function PostsList() {
                       </td>
 
                       {/* Actions */}
-                      <td className="relative whitespace-nowrap py-5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <Link to={`/posts/edit/${post.id}`} className="text-indigo-600 hover:text-indigo-900 font-bold pr-2">
-                          Edit
+                      <td className="flex whitespace-nowrap py-5 pl-3 pr-2 text-right text-sm font-medium sm:pr-2">
+                        <Link to={`/posts/${post.id}`} className="text-indigo-600 hover:text-indigo-900 font-bold px-2" title="View">
+                          <EyeIcon className="h-5 w-5" aria-hidden="true" />
                         </Link>
-                        <Link to={`/posts/${post.id}`} className="text-indigo-600 hover:text-indigo-900 font-bold">
-                          View
+                        <Link to={`/posts/edit/${post.id}`} className="text-gray-600 hover:text-indigo-900 font-bold px-2" title="Edit">
+                          <PencilIcon className="h-5 w-5" aria-hidden="true" />
                         </Link>
+                        <button className="text-red-600 hover:text-indigo-900 font-bold px-2 cursor-pointer" title="Delete" onClick={() => handleDelete(post.id)}>
+                          <TrashIcon className="h-5 w-5" aria-hidden="true" />
+                        </button>
                       </td>
                     </tr>
                   ))}

@@ -80,18 +80,54 @@ def create_post(
 
 @router.put("/update-post/{post_id}", response_model=PostResponse)
 def update_post(
-    post_id: int, 
-    post_update: PostCreate, 
+    post_id: int,
+    title: str = Form(...),
+    category: str = Form("General"),
+    status: str = Form("Draft"),
+    content: str = Form(...),
+    thumbnail: UploadFile = File(None), # New file if user wants to change it
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # 1. Find the post and ensure the user owns it
     db_post = db.query(Post).filter(Post.id == post_id, Post.user_id == current_user.id).first()
+    
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found or unauthorized")
-    
-    for key, value in post_update.dict().items():
-        setattr(db_post, key, value)
-    
+
+    # 2. Handle Thumbnail Update
+    if thumbnail:
+        sub_folder = "post_thumbnails"
+        target_dir = os.path.join(BASE_UPLOAD_DIR, sub_folder)
+        os.makedirs(target_dir, exist_ok=True)
+
+        # DELETE OLD FILE: If a new file is uploaded, remove the previous one from disk
+        if db_post.thumbnail:
+            # strip the leading "/" for local OS path
+            old_file_path = db_post.thumbnail.lstrip("/")
+            if os.path.exists(old_file_path):
+                try:
+                    os.remove(old_file_path)
+                except Exception as e:
+                    print(f"Log: Failed to delete {old_file_path}: {e}")
+
+        # SAVE NEW FILE
+        file_extension = os.path.splitext(thumbnail.filename)[1]
+        unique_filename = f"{uuid4()}{file_extension}"
+        file_save_path = os.path.join(target_dir, unique_filename)
+
+        with open(file_save_path, "wb") as buffer:
+            shutil.copyfileobj(thumbnail.file, buffer)
+
+        # Update the database path
+        db_post.thumbnail = f"/{BASE_UPLOAD_DIR}/{sub_folder}/{unique_filename}".replace("\\", "/")
+
+    # 3. Update Text Fields
+    db_post.title = title
+    db_post.category = category
+    db_post.status = status
+    db_post.content = content
+
     db.commit()
     db.refresh(db_post)
     return db_post
@@ -139,4 +175,15 @@ def get_posts(
         raise HTTPException(status_code=404, detail="Post not found")
     return post
 
+@router.delete("/delete-post/{post_id}")
+def delete_post(post_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    post = db.query(Post).filter(Post.id == post_id, Post.user_id == current_user.id).first()
 
+    if post.thumbnail:
+        file_path = post.thumbnail.lstrip("/")
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    db.delete(post)
+    db.commit()
+    return {"message": "Post deleted successfully."}

@@ -36,6 +36,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          {/* <Route path="/" element={<Home />} /> */}
 
           {/* Private Pages (With Common Header) */}
           <Route path="/" element={<PrivateRoute><Layout><Home /></Layout></PrivateRoute>} />

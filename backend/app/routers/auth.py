@@ -56,7 +56,6 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
-    print("FormData: ", form_data.username, form_data.password)
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(

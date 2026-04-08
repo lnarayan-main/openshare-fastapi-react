@@ -8,6 +8,7 @@ backend/*.pyd
 backend/db.sqlite3
 backend/.pytest_cache/
 backend/uploads/*
+backend/static/*
 # Keep the uploads folder structure but not the images
 !backend/uploads/.gitkeep
 
