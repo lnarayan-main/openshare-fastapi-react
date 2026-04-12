@@ -4,6 +4,8 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # App Settings
+    BACKEND_URL: str
+    FRONTEND_URL: str
     APP_NAME: str
     DATABASE_URL: str
     SECRET_KEY: str

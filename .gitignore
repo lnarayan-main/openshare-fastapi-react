@@ -34,3 +34,6 @@ frontend/yarn-error.log*
 .DS_Store
 *.swp
 Thumbs.db
+
+# general purpose things
+scripts.txt

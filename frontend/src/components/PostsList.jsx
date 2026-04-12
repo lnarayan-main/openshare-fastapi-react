@@ -128,6 +128,7 @@ export default function PostsList() {
                   </td>
                   <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                     <div className="flex justify-end gap-3">
+                       <Link to={`/posts/${post.id}`} className="text-indigo-600 hover:text-indigo-900"><EyeIcon className="h-5 w-5"/></Link>
                        <Link to={`/posts/edit/${post.id}`} className="text-indigo-600 hover:text-indigo-900"><PencilIcon className="h-5 w-5"/></Link>
                        <button onClick={() => handleDelete(post.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="h-5 w-5"/></button>
                     </div>

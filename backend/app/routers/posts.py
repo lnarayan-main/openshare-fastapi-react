@@ -83,7 +83,7 @@ def create_post(
     email_list = [u.email for u in other_users]
 
     if email_list:
-        send_new_post_notification.delay(email_list, post.title, current_user.full_name)
+        send_new_post_notification.delay(post.id, email_list, post.title, current_user.full_name, post.thumbnail)
 
     return post
 
