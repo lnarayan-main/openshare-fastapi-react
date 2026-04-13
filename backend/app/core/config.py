@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
 
+    # Redis Server
+    REDIS_URL: Optional[str] = None
+
     @field_validator("MAIL_FROM_NAME", mode="before")
     @classmethod
     def set_mail_from_name(cls, v, info):

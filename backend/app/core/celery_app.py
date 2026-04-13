@@ -1,9 +1,12 @@
 from celery import Celery
+from app.core.config import settings
+
+redis_url = settings.REDIS_URL or "redis://localhost:6379"
 
 celery_app = Celery(
     "worker",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0",
+    broker=redis_url,
+    backend=redis_url,
     include=['app.tasks.email_tasks']
 )
 
