@@ -37,7 +37,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Layout><Home /></Layout>} />
           <Route path="/posts/:id" element={<PostDetail />} />
 
           {/* Private Pages (With Common Header) */}

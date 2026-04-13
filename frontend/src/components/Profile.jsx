@@ -4,11 +4,11 @@ import { useAuth } from "../contexts/AuthContext";
 import { usersAPI } from "../services/api";
 import { getMediaUrl } from "../services/helpers";
 
-
 export default function Profile() {
   const { user, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const {
     register,
@@ -32,13 +32,15 @@ export default function Profile() {
   };
 
   const uploadProfilePic = async () => {
+    setIsUploading(true);
     try {
       const response = await usersAPI.uploadProfilePic(selectedFile);
-      console.log('response: ', response);
       setUser(response.data);
       setSelectedFile(null);
     } catch (err) {
       alert("Failed to upload photo");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -67,7 +69,9 @@ export default function Profile() {
         <div className="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3">
           {/* Left Side: Photo Management */}
           <div className="px-4 sm:px-0">
-            <h2 className="text-base font-semibold leading-7 text-gray-900">Profile</h2>
+            <h2 className="text-base font-semibold leading-7 text-gray-900">
+              Profile
+            </h2>
             <p className="mt-1 text-sm leading-6 text-gray-600">
               Update your photo and personal details.
             </p>
@@ -75,7 +79,10 @@ export default function Profile() {
             <div className="mt-6 flex flex-col items-center">
               <div className="relative">
                 <img
-                  src={getMediaUrl(user.profile_pic) || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"}
+                  src={
+                    getMediaUrl(user.profile_pic) ||
+                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  }
                   alt=""
                   className="h-32 w-32 rounded-full object-cover ring-4 ring-white shadow-lg"
                 />
@@ -97,30 +104,42 @@ export default function Profile() {
                 {selectedFile && (
                   <button
                     onClick={uploadProfilePic}
-                    className="text-xs font-bold text-indigo-600 hover:text-indigo-500"
+                    disabled={isUploading}
+                    className="flex items-center justify-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-500 disabled:text-gray-400"
                   >
-                    Confirm Upload: {selectedFile.name.substring(0, 10)}...
+                    {isUploading ? (
+                      <>
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent"></div>
+                        Uploading...
+                      </>
+                    ) : (
+                      `Confirm Upload: ${selectedFile.name.substring(0, 10)}...`
+                    )}
                   </button>
                 )}
-                {user.profile_pic && (
+                {/* {user.profile_pic && (
                   <button
                     onClick={deleteProfilePic}
                     className="text-xs font-medium text-red-600 hover:text-red-500"
                   >
                     Remove Photo
                   </button>
-                )}
+                )} */}
               </div>
             </div>
           </div>
 
           {/* Right Side: Information Form */}
           <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2">
-            <form onSubmit={handleSubmit(onSubmit)} className="px-4 py-6 sm:p-8">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="px-4 py-6 sm:p-8"
+            >
               <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
-                
                 <div className="sm:col-span-4">
-                  <label className="block text-sm font-medium leading-6 text-gray-900">Full Name</label>
+                  <label className="block text-sm font-medium leading-6 text-gray-900">
+                    Full Name
+                  </label>
                   <input
                     disabled={!isEditing}
                     {...register("full_name", { required: "Name is required" })}
@@ -130,7 +149,9 @@ export default function Profile() {
                 </div>
 
                 <div className="sm:col-span-4">
-                  <label className="block text-sm font-medium leading-6 text-gray-900">Email address</label>
+                  <label className="block text-sm font-medium leading-6 text-gray-900">
+                    Email address
+                  </label>
                   <input
                     disabled={!isEditing}
                     {...register("email", { required: true })}
@@ -140,7 +161,9 @@ export default function Profile() {
                 </div>
 
                 <div className="sm:col-span-4">
-                  <label className="block text-sm font-medium leading-6 text-gray-900">Mobile Number</label>
+                  <label className="block text-sm font-medium leading-6 text-gray-900">
+                    Mobile Number
+                  </label>
                   <input
                     disabled={!isEditing}
                     {...register("mobile_number")}
@@ -150,7 +173,9 @@ export default function Profile() {
                 </div>
 
                 <div className="col-span-full">
-                  <label className="block text-sm font-medium leading-6 text-gray-900">About Me</label>
+                  <label className="block text-sm font-medium leading-6 text-gray-900">
+                    About Me
+                  </label>
                   <textarea
                     disabled={!isEditing}
                     rows={3}
@@ -161,7 +186,9 @@ export default function Profile() {
                 </div>
 
                 <div className="col-span-full">
-                  <label className="block text-sm font-medium leading-6 text-gray-900">Address</label>
+                  <label className="block text-sm font-medium leading-6 text-gray-900">
+                    Address
+                  </label>
                   <textarea
                     disabled={!isEditing}
                     rows={2}

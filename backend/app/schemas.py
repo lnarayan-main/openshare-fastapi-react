@@ -61,7 +61,7 @@ class UserData(BaseModel):
     full_name: str
     email: str
     mobile_number: str
-    profile_pic: str
+    profile_pic: Optional[str] = None
 
 class PostResponse(BaseModel):
     id: int

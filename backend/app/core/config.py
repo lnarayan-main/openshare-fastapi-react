@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     MAIL_SSL_TLS: bool = False
     USE_CREDENTIALS: bool = True
 
+    #Cloudinary
+    CLOUDINARY_CLOUD_NAME: str
+    CLOUDINARY_API_KEY: str
+    CLOUDINARY_API_SECRET: str
+
     @field_validator("MAIL_FROM_NAME", mode="before")
     @classmethod
     def set_mail_from_name(cls, v, info):

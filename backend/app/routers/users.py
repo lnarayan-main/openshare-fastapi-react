@@ -11,6 +11,7 @@ from app.auth import get_current_user
 from app.models import User
 from decouple import config
 from uuid import uuid4
+from app.core.cloudinary_config import cloudinary
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
@@ -90,45 +91,82 @@ def update_profile(
     return current_user
 
 
+# @router.post("/profile-pic", response_model=UserResponse)
+# async def upload_profile_pic(
+#     profile_pic: UploadFile = File(...),
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user),
+# ):
+#     if not profile_pic.content_type.startswith("image/"):
+#         raise HTTPException(status_code=400, detail="File must be an image")
+    
+#     sub_folder = "profile_pics"
+#     target_dir = os.path.join(BASE_UPLOAD_DIR, sub_folder)
+#     os.makedirs(target_dir, exist_ok=True)
+
+#     if current_user.profile_pic:
+#         old_file_path = current_user.profile_pic.lstrip("/")
+#         if os.path.exists(old_file_path):
+#             try:
+#                 os.remove(old_file_path)
+#             except Exception as e:
+#                 print(f"Log: Could not delete old file {old_file_path}: {e}")
+
+#     file_extension = ".jpg" # We are forcing JPEG in optimization
+#     unique_name = f"user_{current_user.id}_{uuid4().hex[:8]}{file_extension}"
+#     file_save_path = os.path.join(target_dir, unique_name)
+
+#     try:
+#         with Image.open(profile_pic.file) as img:
+#             if img.mode in ("RGBA", "P"):
+#                 img = img.convert("RGB")
+            
+#             img.thumbnail((500, 500))
+            
+#             img.save(file_save_path, "JPEG", quality=85)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Image processing failed: {e}")
+    
+#     relative_web_path = f"/{BASE_UPLOAD_DIR}/{sub_folder}/{unique_name}".replace("\\", "/")
+
+#     current_user.profile_pic = relative_web_path
+#     db.commit()
+#     db.refresh(current_user)
+
+#     return current_user
+
+
+
 @router.post("/profile-pic", response_model=UserResponse)
 async def upload_profile_pic(
-    file: UploadFile = File(...),
+    profile_pic: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if not file.content_type.startswith("image/"):
+    if not profile_pic.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
     
-    sub_folder = "profile_pics"
-    target_dir = os.path.join(BASE_UPLOAD_DIR, sub_folder)
-    os.makedirs(target_dir, exist_ok=True)
+    if profile_pic:
+        try:
+            if current_user.profile_pic_public_id:
+                try:
+                    cloudinary.uploader.destroy(current_user.profile_pic_public_id)
+                except Exception as delete_error:
+                    print(f"⚠️ Failed to delete old profile pic: {delete_error}")
 
-    if current_user.profile_pic:
-        old_file_path = current_user.profile_pic.lstrip("/")
-        if os.path.exists(old_file_path):
-            try:
-                os.remove(old_file_path)
-            except Exception as e:
-                print(f"Log: Could not delete old file {old_file_path}: {e}")
+            res = cloudinary.uploader.upload(
+                profile_pic.file,
+                folder=f"open_share/profile_pics/{current_user.id}",
+                transformation=[{"width": 600, "height": 600, "crop": "limit"}],  
+                overwrite=True
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
-    file_extension = ".jpg" # We are forcing JPEG in optimization
-    unique_name = f"user_{current_user.id}_{uuid4().hex[:8]}{file_extension}"
-    file_save_path = os.path.join(target_dir, unique_name)
 
-    try:
-        with Image.open(file.file) as img:
-            if img.mode in ("RGBA", "P"):
-                img = img.convert("RGB")
-            
-            img.thumbnail((500, 500))
-            
-            img.save(file_save_path, "JPEG", quality=85)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Image processing failed: {e}")
-    
-    relative_web_path = f"/{BASE_UPLOAD_DIR}/{sub_folder}/{unique_name}".replace("\\", "/")
+        current_user.profile_pic = res.get("secure_url")
+        current_user.profile_pic_public_id = res.get("public_id")
 
-    current_user.profile_pic = relative_web_path
     db.commit()
     db.refresh(current_user)
 

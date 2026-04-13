@@ -12,6 +12,7 @@ from app.models import User, Post
 from decouple import config
 from math import ceil
 from app.tasks.email_tasks import send_new_post_notification
+from app.core.cloudinary_config import cloudinary
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
@@ -49,21 +50,47 @@ def create_post(
 ):
     thumbnail_path = None
 
+    # if thumbnail:
+    #     sub_folder = "post_thumbnails"
+    #     target_dir = os.path.join(BASE_UPLOAD_DIR, sub_folder)
+    #     if not os.path.exists(target_dir):
+    #         os.makedirs(target_dir, exist_ok=True)
+        
+    #     file_extension = os.path.splitext(thumbnail.filename)[1]
+    #     unique_filename = f"{uuid4()}{file_extension}"
+
+    #     file_save_path = os.path.join(target_dir, unique_filename)
+        
+    #     with open(file_save_path, "wb") as buffer:
+    #         shutil.copyfileobj(thumbnail.file, buffer)
+
+    #     thumbnail_path = f"/{BASE_UPLOAD_DIR}/{sub_folder}/{unique_filename}".replace("\\", "/")
+
+    # post = Post(
+    #     user_id=current_user.id,
+    #     title=title,
+    #     category=category,
+    #     status=status,
+    #     content=content,
+    #     thumbnail=thumbnail_path 
+    # )
+
+    thumbnail_public_id = None
+
     if thumbnail:
-        sub_folder = "post_thumbnails"
-        target_dir = os.path.join(BASE_UPLOAD_DIR, sub_folder)
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir, exist_ok=True)
-        
-        file_extension = os.path.splitext(thumbnail.filename)[1]
-        unique_filename = f"{uuid4()}{file_extension}"
+        try:
+            res = cloudinary.uploader.upload(
+                thumbnail.file,
+                folder=f"open_share/thumbnails/{current_user.id}",
+                transformation=[{"width": 600, "height": 600, "crop": "limit"}],  
+                overwrite=True
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
-        file_save_path = os.path.join(target_dir, unique_filename)
-        
-        with open(file_save_path, "wb") as buffer:
-            shutil.copyfileobj(thumbnail.file, buffer)
 
-        thumbnail_url = f"/{BASE_UPLOAD_DIR}/{sub_folder}/{unique_filename}".replace("\\", "/")
+        thumbnail_path = res.get("secure_url")
+        thumbnail_public_id = res.get("public_id")
 
     post = Post(
         user_id=current_user.id,
@@ -71,7 +98,8 @@ def create_post(
         category=category,
         status=status,
         content=content,
-        thumbnail=thumbnail_url 
+        thumbnail=thumbnail_path,
+        thumbnail_public_id=thumbnail_public_id
     )
 
     db.add(post)

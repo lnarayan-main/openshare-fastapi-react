@@ -50,7 +50,7 @@ export const usersAPI = {
 
   uploadProfilePic: (file) => {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("profile_pic", file);
     return api.post("/users/profile-pic", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
