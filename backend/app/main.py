@@ -7,7 +7,7 @@ from decouple import config
 
 from app.database import engine
 from app.models import Base
-from app.routers import auth, posts, users
+from app.routers import auth, posts, users, ai_chat
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -43,6 +43,7 @@ app.mount("/static", StaticFiles(directory=base_static_folder), name="static")
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(posts.router)
+app.include_router(ai_chat.router)
 
 
 @app.get("/")

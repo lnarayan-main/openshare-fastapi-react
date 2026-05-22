@@ -98,3 +98,6 @@ class ResetPasswordSchema(BaseModel):
     new_password: str = Field(..., min_length=8, max_length=32, description="The new password for the user")
 
     
+
+class ChatRequest(BaseModel):
+    message: str

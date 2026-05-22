@@ -16,6 +16,9 @@ backend/static/uploads/*
 # Keep the static/uploads folder structure but not the images
 !backend/static/uploads/.gitkeep
 
+app.log
+
+
 
 # --- React / Frontend ---
 frontend/node_modules/

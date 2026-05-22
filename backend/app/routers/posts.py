@@ -13,10 +13,28 @@ from decouple import config
 from math import ceil
 from app.tasks.email_tasks import send_new_post_notification
 from app.core.cloudinary_config import cloudinary
+import time
+import logging
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
 BASE_UPLOAD_DIR = config("UPLOAD_DIR", default="static/uploads")
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    filename="app.log",   # file name
+    filemode="a"          # append mode
+)
+
+
+logger = logging.getLogger(__name__) 
+
+
+
+
+
 
 # @router.post("/create-post", response_model=PostResponse)
 # def create_post(
@@ -201,16 +219,45 @@ def get_posts(
     }
 
 
+# @router.get("/all-posts", response_model=List[PostResponse])
+# def get_posts(
+#     db: Session = Depends(get_db),
+# ):
+#     # Get messages between current user and specified user
+    
+#     posts = (
+#         db.query(Post)
+#         .order_by(Post.created_at.desc())
+#         .all()
+#     )
+
+#     db.commit()
+#     return posts[::-1]
+
+
+# Debugging the api
+
 @router.get("/all-posts", response_model=List[PostResponse])
 def get_posts(
     db: Session = Depends(get_db),
 ):
     # Get messages between current user and specified user
+    
+    logger.info("API Called")
+    
+    start = time.time()
+    
     posts = (
         db.query(Post)
         .order_by(Post.created_at.desc())
         .all()
     )
+    
+    logger.info(f"Fetched {len(posts)} posts")
+    
+    end = time.time()
+    # time taking in milliseconds
+    print(f"DB Query Time: {(end - start) * 1000:.2f} ms")
 
     db.commit()
     return posts[::-1]

@@ -70,3 +70,8 @@ export const postsAPI = {
     getPostById: (id) => api.get(`/posts/post-by-id/${id}`),
     deletePost: (id) => api.delete(`/posts/delete-post/${id}`),
 };
+
+export const chatAPI = {
+  requestChat: (data) => api.post('/ai/chat', data),
+  chatHistory: () => api.get('/ai/chat/history'),
+}
