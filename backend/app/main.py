@@ -10,10 +10,16 @@ from app.models import Base
 # from app.routers import auth, posts, users, ai_chat
 from app.routers import auth, posts, users
 
+from slowapi.middleware import SlowAPIMiddleware
+from app.utils.limiter import limiter
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="OpenShare Platform")
+
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
 
 origins = [
     "http://localhost:5173",
