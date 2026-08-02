@@ -8,7 +8,7 @@ from decouple import config
 from app.database import engine
 from app.models import Base
 # from app.routers import auth, posts, users, ai_chat
-from app.routers import auth, posts, users
+from app.routers import auth, posts, users, qdrant, rag
 
 from slowapi.middleware import SlowAPIMiddleware
 from app.utils.limiter import limiter
@@ -51,6 +51,8 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(posts.router)
 # app.include_router(ai_chat.router)
+app.include_router(qdrant.router)
+app.include_router(rag.router)
 
 
 @app.get("/")

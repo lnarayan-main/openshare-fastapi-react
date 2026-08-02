@@ -33,6 +33,18 @@ class Settings(BaseSettings):
 
     # Redis Server
     REDIS_URL: Optional[str] = None
+    
+    # Qdrant VectorDB
+    QDRANT_HOST: str = "localhost"
+    QDRANT_PORT: int = 6333
+    QDRANT_COLLECTION: str = "my_test_collection"
+    OLLAMA_HOST: str = "http://localhost:11434"
+    EMBEDDING_MODEL: str = "mxbai-embed-large:latest"
+    VECTOR_SIZE: int = 1024
+    
+    # Ollama model
+    OLLAMA_GEN_MODEL: str = "qwen2.5:3b"
+    OLLAMA_INTENT_MODEL: str = "qwen2.5:3b"
 
     @field_validator("MAIL_FROM_NAME", mode="before")
     @classmethod
