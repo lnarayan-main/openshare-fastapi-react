@@ -101,3 +101,24 @@ class ResetPasswordSchema(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
+    
+########## Chat #########3
+
+class ChatMessageCreate(BaseModel):
+    role: str
+    content: str
+
+class ChatMessageResponse(BaseModel):
+    role: str
+    content: str
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True  # For SQLAlchemy ORM compatibility (Pydantic v2)
+
+class ChatSendRequest(BaseModel):
+    message: str
+
+class ChatSendResponse(BaseModel):
+    reply: str
+    sources: Optional[List[dict]] = []

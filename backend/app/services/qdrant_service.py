@@ -40,8 +40,8 @@ def search_query(query: str, limit: int = 5) -> list:
         with_payload=True,
     )
     
-    print("######### Results: ", results)
-    print("######### Points list: ", results.points)
+    # print("######### Results: ", results)
+    # print("######### Points list: ", results.points)
     
     return [
         {"id": hit.id, "score": hit.score, "payload": hit.payload} 

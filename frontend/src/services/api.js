@@ -72,6 +72,12 @@ export const postsAPI = {
 };
 
 export const chatAPI = {
-  requestChat: (data) => api.post('/ai/chat', data),
-  chatHistory: () => api.get('/ai/chat/history'),
+  // requestChat: (data) => api.post('/ai/chat', data),
+  // chatHistory: () => api.get('/ai/chat/history'),
+
+  // Fetch chat history
+  chatHistory: () => api.get('/chat/history'),
+  // Send a message
+  requestChat: (data) => api.post('/chat/send', data),
+  deleteHistory: () => api.delete('/chat/history'),
 }

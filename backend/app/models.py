@@ -1,7 +1,13 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey, JSON, Index
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
+from datetime import datetime
+from bson import ObjectId
+from pydantic import BaseModel, Field
+from typing import Optional
+import uuid
 
 
 class User(Base):
@@ -57,3 +63,20 @@ class ChatHistory(Base):
     content = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, nullable=False, index=True)  # Store user ID as string
+    role = Column(String, nullable=False)  # 'user' or 'ai'
+    content = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    
+    extra_data = Column(JSON, nullable=True)
+
+    # Performance optimization: index for fast history retrieval per user
+    __table_args__ = (
+        Index('ix_chat_messages_user_timestamp', 'user_id', 'timestamp'),
+    )
