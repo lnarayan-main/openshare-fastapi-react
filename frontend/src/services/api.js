@@ -81,3 +81,14 @@ export const chatAPI = {
   requestChat: (data) => api.post('/chat/send', data),
   deleteHistory: () => api.delete('/chat/history'),
 }
+
+
+export const adminAPI = {
+  // Documents
+  getDocuments: (limit = 100, offset = 0) => 
+    api.get(`/admin/documents?limit=${limit}&offset=${offset}`),
+  createDocument: (data) => api.post('/admin/documents', data),
+  getDocument: (id) => api.get(`/admin/documents/${id}`),
+  updateDocument: (id, data) => api.put(`/admin/documents/${id}`, data),
+  deleteDocument: (id) => api.delete(`/admin/documents/${id}`),
+};

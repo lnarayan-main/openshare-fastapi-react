@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 from app.database import get_db
 from app.schemas import TokenData
+from app.models import User
 
 load_dotenv()
 
@@ -92,3 +93,9 @@ async def get_current_user_websocket(token: str, db: Session):
 
     user = db.query(User).filter(User.email == email).first()
     return user
+
+
+def get_current_admin_user(current_user: User = Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    return current_user

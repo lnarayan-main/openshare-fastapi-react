@@ -1,12 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from './Logo';
 import PasswordField from './PasswordField';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState("");
   
@@ -24,11 +24,21 @@ export default function Login() {
     }
   });
 
+  // ✅ NEW: Watch for user changes and redirect
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, navigate]);
+
   const onSubmit = async (data) => {
     setServerError("");
     try {
       await login(data.email, data.password);
-      navigate("/");
     } catch (err) {
       setServerError("Invalid email or password. Please try again.");
       console.error("Login error:", err);

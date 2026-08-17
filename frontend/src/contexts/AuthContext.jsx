@@ -42,6 +42,7 @@ export const AuthProvider = ({ children }) => {
     setToken(access_token);
     const userResponse = await authAPI.getMe();
     setUser(userResponse.data);
+    return userResponse.data;
   };
 
   const register = async (data) => {

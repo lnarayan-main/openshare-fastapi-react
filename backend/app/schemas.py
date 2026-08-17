@@ -33,6 +33,7 @@ class UserUpdate(BaseModel):
 class UserResponse(UserBase):
     id: int
     profile_pic: Optional[str] = None
+    role: str 
     is_active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None

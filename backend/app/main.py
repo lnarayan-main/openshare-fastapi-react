@@ -8,7 +8,7 @@ from decouple import config
 from app.database import engine
 from app.models import Base
 # from app.routers import auth, posts, users, ai_chat
-from app.routers import auth, posts, users, qdrant, rag, chat
+from app.routers import auth, posts, users, qdrant, rag, chat, admin
 
 from slowapi.middleware import SlowAPIMiddleware
 from app.utils.limiter import limiter
@@ -24,6 +24,7 @@ app.add_middleware(SlowAPIMiddleware)
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://10.198.180.172:5173",
     "https://ln-openshare.vercel.app",
 ]
 
@@ -54,6 +55,7 @@ app.include_router(posts.router)
 app.include_router(qdrant.router)
 app.include_router(rag.router)
 app.include_router(chat.router)
+app.include_router(admin.router)
 
 
 @app.get("/")

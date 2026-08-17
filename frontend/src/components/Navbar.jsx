@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { ShieldCheckIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const appName = import.meta.env.VITE_APP_NAME || "My Platform";
 
@@ -50,6 +51,16 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+      {user && user.role === 'admin' && (
+        <Link
+          to="/admin"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 hover:border-indigo-300 shadow-sm group"
+        >
+          <ShieldCheckIcon className="w-4 h-4" />
+          <span>Admin</span>
+          <ChevronRightIcon className="w-3 h-3 opacity-60 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Link>
+      )}
     </nav>
   );
 }

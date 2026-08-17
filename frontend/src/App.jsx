@@ -18,12 +18,24 @@ import PostDetail from "./components/PostDetail";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
 
+import AdminLayout from "./components/AdminLayout";
+import DocumentList from "./components/admin/DocumentList";
+import DocumentForm from "./components/admin/DocumentForm";
+
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) return <div>Loading...</div>;
   return user ? children : <Navigate to="/login" />;
+};
+
+// Add a new PrivateRoute variant for admin
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!user || user.role !== 'admin') return <Navigate to="/" />;
+  return children;
 };
 
 function App() {
@@ -49,6 +61,12 @@ function App() {
           <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
           
           <Route path="*" element={<Navigate to="/" />} />
+
+          {/* Admin Routes  */}
+          <Route path="/admin" element={<AdminRoute><AdminLayout><DocumentList /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/documents" element={<AdminRoute><AdminLayout><DocumentList /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/documents/new" element={<AdminRoute><AdminLayout><DocumentForm /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/documents/edit/:id" element={<AdminRoute><AdminLayout><DocumentForm /></AdminLayout></AdminRoute>} />
         </Routes>
       </Router>
     </AuthProvider>
