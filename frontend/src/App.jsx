@@ -19,8 +19,11 @@ import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
 
 import AdminLayout from "./components/AdminLayout";
+import AdminDashboard from "./components/admin/AdminDashboard";
 import DocumentList from "./components/admin/DocumentList";
 import DocumentForm from "./components/admin/DocumentForm";
+import UserList from "./components/admin/UserList";
+import UserForm from "./components/admin/UserForm";
 
 
 const PrivateRoute = ({ children }) => {
@@ -63,10 +66,15 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
 
           {/* Admin Routes  */}
-          <Route path="/admin" element={<AdminRoute><AdminLayout><DocumentList /></AdminLayout></AdminRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
           <Route path="/admin/documents" element={<AdminRoute><AdminLayout><DocumentList /></AdminLayout></AdminRoute>} />
           <Route path="/admin/documents/new" element={<AdminRoute><AdminLayout><DocumentForm /></AdminLayout></AdminRoute>} />
           <Route path="/admin/documents/edit/:id" element={<AdminRoute><AdminLayout><DocumentForm /></AdminLayout></AdminRoute>} />
+
+          {/* Users  */}
+          <Route path="/admin/users" element={<AdminRoute><AdminLayout><UserList /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/users/new" element={<AdminRoute><AdminLayout><UserForm /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/users/edit/:id" element={<AdminRoute><AdminLayout><UserForm /></AdminLayout></AdminRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

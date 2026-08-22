@@ -14,6 +14,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    role: str = "user"
 
     @validator("password")
     def password_strength(cls, v):
@@ -28,6 +29,8 @@ class UserUpdate(BaseModel):
     about_me: Optional[str] = None
     address: Optional[str] = None
     email: Optional[EmailStr] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
 
 
 class UserResponse(UserBase):

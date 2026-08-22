@@ -84,6 +84,9 @@ export const chatAPI = {
 
 
 export const adminAPI = {
+   // Dashboard Stats
+  getStats: () => api.get('/admin/stats'),
+
   // Documents
   getDocuments: (limit = 100, offset = 0) => 
     api.get(`/admin/documents?limit=${limit}&offset=${offset}`),
@@ -91,4 +94,11 @@ export const adminAPI = {
   getDocument: (id) => api.get(`/admin/documents/${id}`),
   updateDocument: (id, data) => api.put(`/admin/documents/${id}`, data),
   deleteDocument: (id) => api.delete(`/admin/documents/${id}`),
+
+   // Users
+  getUsers: () => api.get('/admin/users'),
+  getUser: (id) => api.get(`/admin/users/${id}`),
+  createUser: (data) => api.post('/admin/users', data),
+  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
 };

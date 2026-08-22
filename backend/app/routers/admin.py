@@ -6,9 +6,14 @@ from app.services.qdrant_service import (
     insert_document, get_document, update_document, delete_document, list_documents
 )
 from app.auth import get_current_admin_user
-from app.models import User
+from app.database import get_db
+from app.models import User, ChatMessage  
+from app.core.qdrant_client import qdrant_manager
+from app.core.config import settings
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
-router = APIRouter(prefix="/api/admin/documents", tags=["Admin Documents"])
+router = APIRouter(prefix="/api/admin", tags=["Admin Documents"])
 
 class DocumentCreate(BaseModel):
     text: str
@@ -26,7 +31,7 @@ class DocumentListResponse(BaseModel):
     documents: list[DocumentResponse]
     next_offset: Optional[int] = None
 
-@router.post("/", response_model=DocumentResponse)
+@router.post("/documents", response_model=DocumentResponse)
 def create_document(
     doc: DocumentCreate,
     admin: User = Depends(get_current_admin_user)
@@ -34,7 +39,7 @@ def create_document(
     result = insert_document(doc.text, doc.metadata)
     return DocumentResponse(id=result["id"], payload=result["payload"])
 
-@router.get("/", response_model=DocumentListResponse)
+@router.get("/documents", response_model=DocumentListResponse)
 def list_docs(
     limit: int = 100,
     offset: int = 0,
@@ -46,7 +51,7 @@ def list_docs(
         next_offset=result["next_offset"]
     )
 
-@router.get("/{doc_id}", response_model=DocumentResponse)
+@router.get("/documents/{doc_id}", response_model=DocumentResponse)
 def get_doc(
     doc_id: str,
     admin: User = Depends(get_current_admin_user)
@@ -56,7 +61,7 @@ def get_doc(
         raise HTTPException(status_code=404, detail="Document not found")
     return DocumentResponse(id=doc["id"], payload=doc["payload"])
 
-@router.put("/{doc_id}", response_model=DocumentResponse)
+@router.put("/documents/{doc_id}", response_model=DocumentResponse)
 def update_doc(
     doc_id: str,
     doc: DocumentUpdate,
@@ -68,7 +73,7 @@ def update_doc(
     except ValueError:
         raise HTTPException(status_code=404, detail="Document not found")
 
-@router.delete("/{doc_id}", status_code=204)
+@router.delete("/documents/{doc_id}", status_code=204)
 def delete_doc(
     doc_id: str,
     admin: User = Depends(get_current_admin_user)
@@ -77,3 +82,39 @@ def delete_doc(
     if not success:
         raise HTTPException(status_code=404, detail="Document not found")
     return None
+
+
+
+@router.get("/stats")
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin_user)
+):
+    """Get real-time statistics for the admin dashboard."""
+    
+    # 1. Count total users
+    total_users = db.query(User).count()
+    
+    # 2. Count total chat messages
+    total_chats = db.query(ChatMessage).count()
+    
+    # 3. Count total documents in Qdrant
+    try:
+        # Use Qdrant's count method (efficient)
+        count_result = qdrant_manager.client.count(
+            collection_name=settings.QDRANT_COLLECTION
+        )
+        total_documents = count_result.count
+    except Exception as e:
+        # Fallback if collection doesn't exist yet
+        total_documents = 0
+    
+    # 4. (Optional) Count distinct users who have chatted
+    distinct_chat_users = db.query(ChatMessage.user_id).distinct().count()
+    
+    return {
+        "users": total_users,
+        "documents": total_documents,
+        "chats": total_chats,
+        "chat_users": distinct_chat_users
+    }
