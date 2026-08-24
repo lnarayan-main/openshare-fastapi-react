@@ -17,6 +17,7 @@ import Layout from "./components/Layout";
 import PostDetail from "./components/PostDetail";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
+import ChangePassword from "./components/ChangePassword";
 
 import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./components/admin/AdminDashboard";
@@ -62,6 +63,7 @@ function App() {
           <Route path="/posts/edit/:id" element={<PrivateRoute><Layout><AddPost /></Layout></PrivateRoute>} />
           {/* <Route path="/posts/:id" element={<PrivateRoute><Layout><PostDetail /></Layout></PrivateRoute>} /> */}
           <Route path="/profile" element={<PrivateRoute><Layout><Profile /></Layout></PrivateRoute>} />
+          <Route path="/change-password" element={<PrivateRoute><Layout><ChangePassword /></Layout></PrivateRoute>}/>
           
           <Route path="*" element={<Navigate to="/" />} />
 

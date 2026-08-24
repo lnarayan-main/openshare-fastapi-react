@@ -126,3 +126,10 @@ class ChatSendRequest(BaseModel):
 class ChatSendResponse(BaseModel):
     reply: str
     sources: Optional[List[dict]] = []
+    
+    
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+

@@ -60,6 +60,7 @@ export const usersAPI = {
   },
 
   deleteProfilePic: () => api.delete("/users/profile-pic"),
+  changePassword: (data) => api.put('/users/change-password', data),
 };
 
 export const postsAPI = {

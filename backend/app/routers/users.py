@@ -6,8 +6,8 @@ from datetime import datetime
 from PIL import Image
 
 from app.database import get_db
-from app.schemas import UserResponse, UserUpdate
-from app.auth import get_current_user
+from app.schemas import UserResponse, UserUpdate, ChangePasswordRequest
+from app.auth import get_current_user, get_password_hash, verify_password
 from app.models import User
 from decouple import config
 from uuid import uuid4
@@ -188,3 +188,23 @@ def delete_profile_pic(
         db.refresh(current_user)
 
     return current_user
+
+
+@router.put('/change-password')
+def change_password(
+    request: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verify current password
+    if not verify_password(request.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+        
+    # Hash new password and update
+    current_user.hashed_password = get_password_hash(request.new_password)
+    db.commit()
+    
+    return {"detail": "Password updated successfully"}
