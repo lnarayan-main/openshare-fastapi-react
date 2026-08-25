@@ -3,25 +3,63 @@ from app.services.intent_service import intent_service
 from app.services.qdrant_service import search_query
 from app.services.generation_service import generation_service
 from app.core.config import settings
+from app.core.redis_client import redis_client
+from app.services.ollama_service import ollama_service
 
 
 class RAGService:
     @staticmethod
-    def ask(query: str, limit: int = 3) -> dict:
+    def generate_full(query: str, search_results: list) -> str:
+        """Generate a full answer (non-streaming) from context."""
+        if not search_results:
+            return "I couldn't find any relevant information in the database to answer that."
+        
+        context_parts = []
+        for idx, result in enumerate(search_results, 1):
+            text = result.get("payload", {}).get("text", "")
+            if text:
+                context_parts.append(f"Document {idx}: {text}")
+        context = "\n".join(context_parts)
+        
+        system_prompt = (
+            "You are a helpful AI assistant. Answer the user's question based **strictly** on the provided context. "
+            "If the context does not contain enough information to answer the question, "
+            "clearly say 'I don't have enough information to answer that.' Do not make up facts."
+        )
+        user_prompt = f"Context:\n{context}\n\nQuestion: {query}"
+        
+        # Use non-streaming call
+        response = ollama.chat(
+            model=settings.OLLAMA_GEN_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            stream=False
+        )
+        return response["message"]["content"].strip()
+    
+    @staticmethod
+    def ask(query: str, limit: int = 3, use_cache: bool = True) -> dict:
         """
         Full RAG pipeline:
-        1. Classify intent
-        2. If RETRIEVAL -> Search Qdrant -> Generate answer
-        3. If CHAT -> Direct chat (no context)
+        1. Check cache
+        2. Classify intent
+        3. If RETRIEVAL -> Search Qdrant -> Generate answer
+        4. If CHAT -> Direct chat (no context)
         """
         
-        # Step 1: Intent Classification
+        # 1. Check cache
+        if use_cache:
+            cached = redis_client.get(query)
+            if cached:
+                return cached
+        
+        # 2: Intent Classification
         intent = intent_service.classify(query)
         
         if intent == "CHAT":
             # For generic chat, just use the generator without context
-            from app.services.ollama_service import ollama_service
-            from app.core.config import settings
             
             response = ollama_service.generate(
                 model=settings.OLLAMA_GEN_MODEL,
@@ -36,14 +74,35 @@ class RAGService:
                 "intent": "chat"
             }
             
-        # Step 2: Retrieve from Qdrant(using your existing function)
+        # 3: Retrieve from Qdrant(using your existing function)
         search_results = search_query(query, limit=limit)
         
         
-        # Step 3: Generate Answer from context
-        result = generation_service.answer(query, search_results)
-        result['intent'] = 'retrieval'
-        result['query'] = query
+        # 4: Generate Answer from context
+        # result = generation_service.answer(query, search_results)
+        # result['intent'] = 'retrieval'
+        # result['query'] = query
+        # return result
+        
+        answer = RAGService.generate_full(query, search_results)
+        sources = []
+        for r in search_results:
+            sources.append({
+                "id": r.get("id"),
+                "text": r.get("payload", {}).get("text"),
+                "score": r.get("score")
+            })
+        result = {
+            "query": query,
+            "answer": answer,
+            "sources": sources,
+            "intent": "retrieval"
+        }
+        
+        # 5. Cache the result for future identical queries
+        if use_cache:
+            redis_client.set(query, result)
+
         return result
     
     @staticmethod
@@ -90,6 +149,90 @@ class RAGService:
             token = chunk.get('message', {}).get('content', '')
             if token:
                 yield token
+                
+                
+                
+    @staticmethod
+    def stream_with_cache(query: str, limit: int = 3):
+        """
+        Streaming endpoint with cache. Yields:
+        1. A 'sources' event (if retrieval mode)
+        2. Tokens (streaming)
+        """
+        # 1. Check cache
+        cached = redis_client.get(query)
+        if cached:
+            # Yield sources (from cached data)
+            if cached.get("sources"):
+                yield ("sources", cached["sources"])
+            # Yield tokens
+            full_answer = cached.get("answer", "")
+            for word in full_answer.split():
+                yield ("token", word + " ")
+            return
+
+        # 2. Cache miss: run intent classification
+        intent = intent_service.classify(query)
+        if intent == "CHAT":
+            answer = ollama_service.generate(
+                model=settings.OLLAMA_GEN_MODEL,
+                system_prompt="You are a helpful, friendly assistant. Keep responses concise.",
+                user_prompt=query
+            )
+            result = {"query": query, "answer": answer, "sources": [], "intent": "chat"}
+            redis_client.set(query, result)
+            for word in answer.split():
+                yield ("token", word + " ")
+            return
+
+        # 3. Retrieval + Generation
+        search_results = search_query(query, limit=limit)
+        sources = [{"id": r.get("id"), "text": r.get("payload", {}).get("text"), "score": r.get("score")}
+                for r in search_results]
+        
+        # Yield sources first
+        yield ("sources", sources)
+
+        # Build context and stream
+        context_parts = []
+        for idx, result in enumerate(search_results, 1):
+            text = result.get("payload", {}).get("text", "")
+            if text:
+                context_parts.append(f"Document {idx}: {text}")
+        context = "\n".join(context_parts)
+
+        system_prompt = (
+            "You are a helpful AI assistant. Answer the user's question based **strictly** on the provided context. "
+            "If the context does not contain enough information to answer the question, "
+            "clearly say 'I don't have enough information to answer that.' Do not make up facts."
+        )
+        user_prompt = f"Context:\n{context}\n\nQuestion: {query}"
+
+        full_answer = ""
+        stream = ollama.chat(
+            model=settings.OLLAMA_GEN_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            stream=True
+        )
+
+        for chunk in stream:
+            token = chunk.get('message', {}).get('content', '')
+            if token:
+                full_answer += token
+                yield ("token", token)
+
+        # Cache full response
+        result = {
+            "query": query,
+            "answer": full_answer,
+            "sources": sources,
+            "intent": "retrieval"
+        }
+        redis_client.set(query, result)
+        
     
 rag_service = RAGService()
 

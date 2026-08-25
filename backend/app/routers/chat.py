@@ -74,8 +74,8 @@ def send_message(
     return ChatSendResponse(reply=reply_text, sources=sources)
 
 
-@router.post("/send_stream")
-async def send_stream_message(
+@router.post("/send_stream_old")
+async def send_stream_message_old(
     request: ChatSendRequest,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
@@ -126,6 +126,57 @@ async def send_stream_message(
         db.commit()
 
         # 5. Send a final "done" event
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
+
+    return StreamingResponse(generate_events(), media_type="text/event-stream")
+
+
+
+@router.post("/send_stream")
+async def send_stream_message(
+    request: ChatSendRequest,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    user_id = str(current_user.id)
+    
+    # 1. Save user message
+    user_msg = ChatMessageModel(
+        user_id=user_id,
+        role="user",
+        content=request.message
+    )
+    db.add(user_msg)
+    db.commit()
+    
+     # We'll capture sources here
+    captured_sources = None
+
+    # 2. Streaming generator (uses cache internally)
+    async def generate_events():
+        nonlocal captured_sources
+        full_reply = ""
+        
+        # ✅ Use stream_with_cache – it handles retrieval, cache, and sources internally
+        # But we need sources for the frontend? If you want sources, you'll need to modify stream_with_cache
+        # to yield sources as the first event. For now, we only stream tokens.
+        for event_type, data in rag_service.stream_with_cache(request.message, limit=3):
+            if event_type == "sources":
+                captured_sources = data
+                yield f"data: {json.dumps({'type': 'sources', 'data': data})}\n\n"
+            elif event_type == "token":
+                full_reply += data
+                yield f"data: {json.dumps({'type': 'token', 'data': data})}\n\n"
+
+        # Save AI message to DB
+        ai_msg = ChatMessageModel(
+            user_id=user_id,
+            role="ai",
+            content=full_reply,
+            extra_data=captured_sources  # You'll need to capture sources from the event loop
+        )
+        db.add(ai_msg)
+        db.commit()
         yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
     return StreamingResponse(generate_events(), media_type="text/event-stream")

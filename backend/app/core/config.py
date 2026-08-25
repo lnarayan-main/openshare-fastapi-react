@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     # Ollama model
     OLLAMA_GEN_MODEL: str = "qwen2.5:3b"
     OLLAMA_INTENT_MODEL: str = "qwen2.5:3b"
+    
+    REDIS_URL: str = "redis://localhost:6379/0"
+    CACHE_TTL: int = 3600  # 1 hour
 
     @field_validator("MAIL_FROM_NAME", mode="before")
     @classmethod
