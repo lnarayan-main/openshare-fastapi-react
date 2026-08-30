@@ -7,12 +7,30 @@ from app.core.redis_client import redis_client
 from app.services.ollama_service import ollama_service
 
 
+# def _get_fallback_message() -> str:
+#     return (
+#         "I couldn't find any relevant information in the database to answer your question. "
+#         f"For further assistance, please reach out to our support team:\n"
+#         f"📧 Email: {settings.CONTACT_EMAIL}\n"
+#         f"📞 Phone: {settings.CONTACT_PHONE}"
+#     )
+    
+    
+def _get_fallback_message() -> str:
+    return (
+        "I couldn't find any relevant information in the database to answer your question.\n\n"
+        "For further assistance, please reach out to our support team:\n\n"
+        f"📧 Email: [support@yourapp.com](mailto:{settings.CONTACT_EMAIL})\n\n"
+        f"📞 Phone: [{settings.CONTACT_PHONE}](tel:{settings.CONTACT_PHONE})\n\n"
+        "For more information, [click here](https://your-website.com/help)."
+    )
+
 class RAGService:
     @staticmethod
     def generate_full(query: str, search_results: list) -> str:
         """Generate a full answer (non-streaming) from context."""
         if not search_results:
-            return "I couldn't find any relevant information in the database to answer that."
+            return _get_fallback_message()
         
         context_parts = []
         for idx, result in enumerate(search_results, 1):
@@ -115,7 +133,7 @@ class RAGService:
         """Step 2: Stream the answer token by token from Ollama."""
         if not search_results:
             # Yield a single message if no context
-            yield "I couldn't find any relevant information in the database to answer that."
+            yield _get_fallback_message()
             return
 
         # Build context from search results
@@ -187,6 +205,26 @@ class RAGService:
 
         # 3. Retrieval + Generation
         search_results = search_query(query, limit=limit)
+        
+        # 4. 🚨 NEW: Check relevance threshold (e.g., 0.4)
+        RELEVANCE_THRESHOLD = 0.4  # You can adjust this
+        is_relevant = False
+        if search_results:
+            top_score = search_results[0].get("score", 0)
+            if top_score >= RELEVANCE_THRESHOLD:
+                is_relevant = True
+        
+         # 5. If no results OR scores are too low → trigger fallback
+        if not search_results or not is_relevant:
+            fallback = _get_fallback_message()
+            result = {"query": query, "answer": fallback, "sources": [], "intent": "retrieval"}
+            redis_client.set(query, result)
+            yield ("sources", [])  # Send empty sources
+            for word in fallback.split():
+                yield ("token", word + " ")
+            return
+        
+        # 6. Proceed with normal RAG (sources + LLM streaming)
         sources = [{"id": r.get("id"), "text": r.get("payload", {}).get("text"), "score": r.get("score")}
                 for r in search_results]
         

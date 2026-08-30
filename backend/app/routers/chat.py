@@ -9,6 +9,7 @@ from app.auth import get_current_user
 from datetime import datetime
 from typing import List
 from fastapi.responses import StreamingResponse
+from app.core.redis_client import redis_client
 
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
@@ -193,3 +194,9 @@ def delete_chat_history(
     db.commit()
     return None
 
+
+
+@router.delete("/clear-cache")
+def clear_cache():
+    redis_client.clear()
+    return {"status": "Cache cleared successfully"}

@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from "../contexts/AuthContext";
 import { chatAPI } from "../services/api";
+import ReactMarkdown from 'react-markdown';
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -244,9 +245,14 @@ export default function ChatWidget() {
             {/* {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
-                  msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-800 border border-gray-100'
+                  msg.role === 'user' 
+                    ? 'bg-indigo-600 text-white' 
+                    : 'bg-white text-gray-800 border border-gray-100'
                 }`}>
-                  {msg.text}
+                  {msg.text || (msg.isStreaming ? '\u200B' : '')}
+                  {msg.isStreaming && (
+                    <span className="inline-block w-1 h-4 ml-0.5 bg-gray-400 animate-pulse">|</span>
+                  )}
                 </div>
               </div>
             ))} */}
@@ -258,9 +264,34 @@ export default function ChatWidget() {
                     ? 'bg-indigo-600 text-white' 
                     : 'bg-white text-gray-800 border border-gray-100'
                 }`}>
-                  {msg.text || (msg.isStreaming ? '\u200B' : '')} {/* Zero-width space to keep height */}
-                  {msg.isStreaming && (
-                    <span className="inline-block w-1 h-4 ml-0.5 bg-gray-400 animate-pulse">|</span>
+                  {msg.role === 'user' ? (
+                    // 👤 User messages: plain text
+                    msg.text
+                  ) : (
+                    // 🤖 AI messages: render Markdown with streaming cursor
+                    <>
+                      <ReactMarkdown
+                        components={{
+                          a: ({ href, children }) => (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-indigo-600 underline hover:text-indigo-800"
+                            >
+                              {children}
+                            </a>
+                          ),
+                        }}
+                      >
+                        {typeof msg.text === 'string' ? msg.text : ''}
+                      </ReactMarkdown>
+
+                      {/* Blinking cursor while streaming */}
+                      {msg.isStreaming && (
+                        <span className="inline-block w-1 h-4 ml-0.5 bg-gray-400 animate-pulse">|</span>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

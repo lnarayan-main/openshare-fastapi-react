@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     
     REDIS_URL: str = "redis://localhost:6379/0"
     CACHE_TTL: int = 3600  # 1 hour
+    
+    CONTACT_EMAIL: str = "support@yourapp.com"
+    CONTACT_PHONE: str = "+1-800-555-0199"
 
     @field_validator("MAIL_FROM_NAME", mode="before")
     @classmethod
